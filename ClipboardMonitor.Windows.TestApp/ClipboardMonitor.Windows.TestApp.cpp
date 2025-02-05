@@ -4,7 +4,7 @@
 // Declare the callback type for the callback with data (takes a const char* parameter)
 typedef void(__cdecl* ClipboardChangedCallbackWithData)(const char*, int type);
 
-// Declare the external functions from the DLL
+// Declare the external functions from the DLLs
 extern "C" __declspec(dllimport) void StartClipboardListener();
 extern "C" __declspec(dllimport) void SetClipboardChangedCallback(void(*callback)());
 extern "C" __declspec(dllimport) void SetClipboardChangedCallbackWithData(ClipboardChangedCallbackWithData callback);
@@ -18,7 +18,13 @@ void OnClipboardChanged() {
 void OnClipboardChangedWithData(const char* clipboardData, int type) {
     if (clipboardData != nullptr) {
         std::cout << "Clipboard content changed with data" << std::endl;
-        std::cout << "Data: " << clipboardData << std::endl;
+
+        if (type == 3 || type == 4) {
+            std::cout << "Data: Image" << std::endl;
+        }
+        else {
+            std::cout << "Data: " << clipboardData << std::endl;
+        }        
     }
     else {
         std::cout << "Clipboard content changed, but no data available!" << std::endl;
