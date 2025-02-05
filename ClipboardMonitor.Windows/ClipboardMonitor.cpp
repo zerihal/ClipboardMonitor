@@ -1,11 +1,64 @@
 #include <windows.h>
 #include <iostream>
+#include <shlobj.h>   // For HDROP (file paths)
+#include <vector>
+#include <string>
 
-// Defines a function pointer type for the callback
+// Define callback types
 typedef void (*ClipboardChangedCallback)();
+typedef void (*ClipboardChangedCallbackWithData)(const char* data, int type);
 
-// Declares a global variable to store the callback function
+// Global variables for storing callbacks
 ClipboardChangedCallback g_clipboardCallback = nullptr;
+ClipboardChangedCallbackWithData g_callback = nullptr;
+
+enum ClipboardDataType {
+    TEXT = 1,
+    FILES = 2,
+    IMAGE = 3
+};
+
+// Function to retrieve text from the clipboard
+std::string GetClipboardText() {
+    if (!OpenClipboard(nullptr)) return "";
+
+    HANDLE hData = GetClipboardData(CF_TEXT);
+    if (hData == nullptr) return "";
+
+    char* pszText = static_cast<char*>(GlobalLock(hData));
+    if (pszText == nullptr) return "";
+
+    std::string text(pszText);
+    GlobalUnlock(hData);
+    CloseClipboard();
+    return text;
+}
+
+// Function to retrieve file paths from clipboard
+std::string GetClipboardFiles() {
+    if (!OpenClipboard(nullptr)) return "";
+
+    HANDLE hDrop = GetClipboardData(CF_HDROP);
+    if (hDrop == nullptr) return "";
+
+    HDROP hDropData = (HDROP)hDrop;
+    UINT fileCount = DragQueryFile(hDropData, 0xFFFFFFFF, NULL, 0);
+    std::string fileList;
+
+    for (UINT i = 0; i < fileCount; i++) {
+        char filePath[MAX_PATH];
+        DragQueryFileA(hDropData, i, filePath, MAX_PATH);
+        fileList += std::string(filePath) + "\n";
+    }
+
+    CloseClipboard();
+    return fileList;
+}
+
+// Function to check if clipboard contains an image
+bool IsClipboardImage() {
+    return IsClipboardFormatAvailable(CF_BITMAP) || IsClipboardFormatAvailable(CF_DIB);
+}
 
 // Callback function for clipboard changes
 LRESULT CALLBACK ClipboardProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -13,6 +66,21 @@ LRESULT CALLBACK ClipboardProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
         if (g_clipboardCallback != nullptr) {
             // Invoke the callback function when the clipboard changes
             g_clipboardCallback();
+        }
+
+        // Ensure the callback with data is valid before invoking it
+        if (g_callback != nullptr) {
+            if (IsClipboardFormatAvailable(CF_TEXT)) {
+                std::string text = GetClipboardText();
+                g_callback(text.c_str(), TEXT);
+            }
+            else if (IsClipboardFormatAvailable(CF_HDROP)) {
+                std::string files = GetClipboardFiles();
+                g_callback(files.c_str(), FILES);
+            }
+            else if (IsClipboardImage()) {
+                g_callback("Clipboard contains an image", IMAGE);
+            }
         }
     }
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
@@ -45,4 +113,7 @@ extern "C" __declspec(dllexport) void SetClipboardChangedCallback(ClipboardChang
     g_clipboardCallback = callback;
 }
 
-
+// Function to set the callback for clipboard changes with data and type
+extern "C" __declspec(dllexport) void SetClipboardChangedCallbackWithData(ClipboardChangedCallbackWithData callback) {
+    g_callback = callback;
+}
