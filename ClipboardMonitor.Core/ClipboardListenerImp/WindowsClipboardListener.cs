@@ -29,7 +29,7 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
         private CancellationTokenSource? _clipboardMonitorTokenCts;
         private NotificationType _notificationType;
 
-        public event EventHandler<ClipboardChangedEventArgs>? ClipboardChanged;
+        public event EventHandler<WinClipboardChangedEventArgs>? ClipboardChanged;
 
         public bool IsMonitoring { get; private set; }
 
@@ -160,6 +160,6 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
             return bitmap;
         }
 
-        private void OnClipboardChanged(ClipboardChangedEventArgs e) => ClipboardChanged?.Invoke(this, e);
+        private void OnClipboardChanged(WinClipboardChangedEventArgs e) => ClipboardChanged?.Invoke(this, e);
     }
 }
