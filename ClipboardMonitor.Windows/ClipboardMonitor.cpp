@@ -7,10 +7,12 @@
 // Define callback types
 typedef void (*ClipboardChangedCallback)();
 typedef void (*ClipboardChangedCallbackWithData)(const char* data, int type);
+typedef void (*ClipboardChangedCallbackWithImage)(const BYTE* data, size_t length, int type);
 
 // Global variables for storing callbacks
 ClipboardChangedCallback g_clipboardCallback = nullptr;
-ClipboardChangedCallbackWithData g_callback = nullptr;
+ClipboardChangedCallbackWithData g_text_callback = nullptr;
+ClipboardChangedCallbackWithImage g_image_callback = nullptr;
 
 enum ClipboardDataType {
     TEXT = 1,
@@ -129,24 +131,17 @@ std::vector<BYTE> GetClipboardImageData() {
 
 // Function to handle clipboard image (CF_BITMAP) format
 void HandleClipboardImage(ClipboardDataType type) {
-    if (g_callback != nullptr) {
+    if (g_image_callback != nullptr) {
         std::vector<BYTE> imgData = type == IMG_DIB ? GetClipboardImageData() : GetClipboardBitmapData();
 
-        // If we got image data, call the callback
         if (!imgData.empty()) {
-            // Pass the image data as a pointer to the callback
-            g_callback(reinterpret_cast<const char*>(imgData.data()), type);
+            g_image_callback(imgData.data(), imgData.size(), type);
         }
         else {
-            g_callback("No image data", type);
+            g_text_callback("No image data", type);
         }
     }
 }
-
-// Function to check if clipboard contains an image
-//bool IsClipboardImage() {
-//    return IsClipboardFormatAvailable(CF_BITMAP) || IsClipboardFormatAvailable(CF_DIB);
-//}
 
 // Callback function for clipboard changes
 LRESULT CALLBACK ClipboardProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -157,14 +152,14 @@ LRESULT CALLBACK ClipboardProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
         }
 
         // Ensure the callback with data is valid before invoking it
-        if (g_callback != nullptr) {
+        if (g_text_callback != nullptr) {
             if (IsClipboardFormatAvailable(CF_TEXT)) {
                 std::string text = GetClipboardText();
-                g_callback(text.c_str(), TEXT);
+                g_text_callback(text.c_str(), TEXT);
             }
             else if (IsClipboardFormatAvailable(CF_HDROP)) {
                 std::string files = GetClipboardFiles();
-                g_callback(files.c_str(), FILES);
+                g_text_callback(files.c_str(), FILES);
             }
             else if (IsClipboardFormatAvailable(CF_BITMAP)) {
                 //g_callback("Clipboard contains an image", IMAGE);
@@ -207,5 +202,10 @@ extern "C" __declspec(dllexport) void SetClipboardChangedCallback(ClipboardChang
 
 // Function to set the callback for clipboard changes with data and type
 extern "C" __declspec(dllexport) void SetClipboardChangedCallbackWithData(ClipboardChangedCallbackWithData callback) {
-    g_callback = callback;
+    g_text_callback = callback;
+}
+
+// Register the image callback
+extern "C" __declspec(dllexport) void SetClipboardChangedCallbackWithImage(ClipboardChangedCallbackWithImage callback) {
+    g_image_callback = callback;
 }

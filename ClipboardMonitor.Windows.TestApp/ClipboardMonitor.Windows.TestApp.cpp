@@ -3,11 +3,13 @@
 
 // Declare the callback type for the callback with data (takes a const char* parameter)
 typedef void(__cdecl* ClipboardChangedCallbackWithData)(const char*, int type);
+typedef void(__cdecl* ClipboardChangedCallbackWithImage)(const BYTE* data, size_t length, int type);
 
 // Declare the external functions from the DLLs
 extern "C" __declspec(dllimport) void StartClipboardListener();
 extern "C" __declspec(dllimport) void SetClipboardChangedCallback(void(*callback)());
 extern "C" __declspec(dllimport) void SetClipboardChangedCallbackWithData(ClipboardChangedCallbackWithData callback);
+extern "C" __declspec(dllimport) void SetClipboardChangedCallbackWithImage(ClipboardChangedCallbackWithImage callback);
 
 // The callback function to be called when the clipboard changes
 void OnClipboardChanged() {
@@ -18,16 +20,21 @@ void OnClipboardChanged() {
 void OnClipboardChangedWithData(const char* clipboardData, int type) {
     if (clipboardData != nullptr) {
         std::cout << "Clipboard content changed with data" << std::endl;
-
-        if (type == 3 || type == 4) {
-            std::cout << "Data: Image" << std::endl;
-        }
-        else {
-            std::cout << "Data: " << clipboardData << std::endl;
-        }        
+        std::cout << "Data: " << clipboardData << std::endl;
     }
     else {
         std::cout << "Clipboard content changed, but no data available!" << std::endl;
+    }
+}
+
+void OnClipboardChangedWithImage(const BYTE* data, size_t length, int type) {
+    if (data != nullptr) {
+        if (length > 0) {
+            std::cout << "Data: Image" << std::endl;
+        }
+        else {
+            std::cout << "Data: Image with no data" << std::endl;
+        }
     }
 }
 
@@ -40,7 +47,10 @@ int main() {
     std::cout << "Setting callback for clipboard change with data..." << std::endl;
     SetClipboardChangedCallbackWithData(OnClipboardChangedWithData);
 
-    // Check if callbacks are set correctly (for debugging)
+    // Set the callback for clipboard changes with images
+    std::cout << "Setting callback for clipboard change with image ..." << std::endl;
+    SetClipboardChangedCallbackWithImage(OnClipboardChangedWithImage);
+
     std::cout << "Callbacks set. Starting clipboard listener..." << std::endl;
 
     // Start the clipboard listener from the DLL
