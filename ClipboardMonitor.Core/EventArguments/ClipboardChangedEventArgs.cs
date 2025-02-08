@@ -6,8 +6,6 @@ namespace ClipboardMonitor.Core.EventArguments
     {
         public string? ClipboardText { get; }
 
-        public byte[]? ClipboardImageData { get; }
-
         public bool IsClipboardTextFilesPath => DataType == ClipboardDataType.FILES;
 
         public bool IsNotificationOnly => DataType == ClipboardDataType.NONE;
@@ -25,10 +23,9 @@ namespace ClipboardMonitor.Core.EventArguments
             }
         }
 
-        public ClipboardChangedEventArgs(string? clipboardText, byte[]? clipboardImageData, ClipboardDataType type) : this(type)
+        public ClipboardChangedEventArgs(string clipboardText, ClipboardDataType type) : this(type)
         {
             ClipboardText = clipboardText;
-            ClipboardImageData = clipboardImageData;
         }
 
         public ClipboardChangedEventArgs(ClipboardDataType type)

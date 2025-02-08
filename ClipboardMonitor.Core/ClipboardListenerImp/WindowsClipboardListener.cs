@@ -1,6 +1,7 @@
 ﻿using ClipboardMonitor.Core.Enums;
 using ClipboardMonitor.Core.EventArguments;
 using ClipboardMonitor.Core.Interfaces;
+using System.Drawing;
 using System.Runtime.InteropServices;
 
 namespace ClipboardMonitor.Core.ClipboardListenerImp
@@ -111,18 +112,52 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
             {
                 case ClipboardDataType.TEXT:
                     Console.WriteLine("Text copied: " + data);
+                    OnClipboardChanged(new WinClipboardChangedEventArgs(data, ClipboardDataType.TEXT));
                     break;
                 case ClipboardDataType.FILES:
                     Console.WriteLine("Files copied: " + data);
+                    OnClipboardChanged(new WinClipboardChangedEventArgs(data, ClipboardDataType.FILES));
                     break;
                 case ClipboardDataType.IMG_BITMAP:
                 case ClipboardDataType.IMG_DIB:
                     Console.WriteLine("Image copied");
+                    OnClipboardChanged(new WinClipboardChangedEventArgs(GetBitmapFromClipboard(), ClipboardDataType.IMAGE));
                     break;
                 default:
                     Console.WriteLine("Unknown clipboard event");
                     break;
             }
+        }
+
+        private static Bitmap? GetBitmapFromClipboard()
+        {
+            Bitmap? bitmap = null;
+
+            if (NativeMethods.IsClipboardFormatAvailable(NativeMethods.CF_BITMAP))
+            {
+                if (NativeMethods.OpenClipboard(IntPtr.Zero))
+                {
+                    try
+                    {
+                        IntPtr hBitmap = NativeMethods.GetClipboardData(NativeMethods.CF_BITMAP);
+                        if (hBitmap != IntPtr.Zero)
+                        {
+                            // Create .NET Bitmap from GDI bitmap handle
+                            #pragma warning disable CA1416 // Validate platform compatibility - this is Windows implementation only
+                            bitmap = Image.FromHbitmap(hBitmap);
+                            #pragma warning restore CA1416 // Validate platform compatibility
+
+                            // Ensure the GDI object is released
+                            NativeMethods.DeleteObject(hBitmap);
+                        }
+                    }
+                    finally
+                    {
+                        NativeMethods.CloseClipboard();
+                    }
+                }
+            }
+            return bitmap;
         }
 
         private void OnClipboardChanged(ClipboardChangedEventArgs e) => ClipboardChanged?.Invoke(this, e);
