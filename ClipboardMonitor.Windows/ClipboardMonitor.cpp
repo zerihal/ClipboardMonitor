@@ -157,6 +157,7 @@ LRESULT CALLBACK ClipboardProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
         }
 
         // Ensure the callback with data is valid before invoking it
+        // ToDo: Don't bother passing back the image data now - we will handle this on the .NET core side
         if (g_callback != nullptr) {
             if (IsClipboardFormatAvailable(CF_TEXT)) {
                 std::string text = GetClipboardText();

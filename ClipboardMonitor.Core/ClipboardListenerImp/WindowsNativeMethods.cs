@@ -2,7 +2,7 @@
 
 namespace ClipboardMonitor.Core.ClipboardListenerImp
 {
-    public static class NativeMethods
+    public static class WindowsNativeMethods
     {
         [DllImport("user32.dll")]
         public static extern bool OpenClipboard(IntPtr hWndNewOwner);
@@ -18,6 +18,9 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
 
         [DllImport("gdi32.dll")]
         public static extern bool DeleteObject(IntPtr hObject);
+
+        [DllImport("user32.dll")]
+        public static extern uint GetClipboardSequenceNumber();
 
         public const uint CF_BITMAP = 2; // GDI Bitmap format
     }

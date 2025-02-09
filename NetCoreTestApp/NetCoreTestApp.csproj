@@ -7,4 +7,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ClipboardMonitor.Core\ClipboardMonitor.Core.csproj" />
+  </ItemGroup>
+
 </Project>
