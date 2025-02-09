@@ -6,6 +6,11 @@ namespace ClipboardMonitor.Core.Factories
 {
     public static class ClipboardListenerFactory
     {
+        /// <summary>
+        /// Creates an IClipboardListener implementation appropriate for the current platform.
+        /// </summary>
+        /// <returns>Implementation of IWindowsClipboardListener, ILinuxClipboardListener, or IMacClipboardListener depending on platform.</returns>
+        /// <exception cref="PlatformNotSupportedException">Unsupported platform exception.</exception>
         public static IClipboardListener CreateClipboardListener()
         {
             if (OperatingSystem.IsWindows())
@@ -26,6 +31,12 @@ namespace ClipboardMonitor.Core.Factories
             }
         }
 
+        /// <summary>
+        /// Creates an IClipboardListener implementation appropriate for the type and current platform.
+        /// </summary>
+        /// <typeparam name="T">IClipboardListener interface type for the platform.</typeparam>
+        /// <returns>Implementation of IWindowsClipboardListener, ILinuxClipboardListener, or IMacClipboardListener depending on type and platform.</returns>
+        /// <exception cref="NotSupportedException">Unsupported type for the platform or unsupported platform.</exception>
         public static T CreateClipboardListener<T>() where T : IClipboardListener
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && typeof(T) == typeof(IWindowsClipboardListener))

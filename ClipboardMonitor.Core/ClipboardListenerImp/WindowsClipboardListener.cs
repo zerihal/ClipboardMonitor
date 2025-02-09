@@ -8,9 +8,10 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
 {
     public class WindowsClipboardListener : IWindowsClipboardListener
     {
-        // Define a delegate matching the C++ callback function signature
+        // Delegate matching the ClipboardMonitor.Windows callback function signature for clipboard changed
         private delegate void ClipboardChangedCallback();
 
+        // Delegate matching the ClipboardMonitor.Windows callback function signature for clipboard changed with data
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void ClipboardChangedCallbackWithData([MarshalAs(UnmanagedType.LPStr)] string data, int type);
 
@@ -22,6 +23,7 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
         [DllImport("ClipboardMonitor.Windows.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void StartClipboardListener();
 
+        // Import SetClipboardChangedCallbackWithData function from the DLL
         [DllImport("ClipboardMonitor.Windows.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void SetClipboardChangedCallbackWithData(ClipboardChangedCallbackWithData? callback);
 
@@ -33,8 +35,10 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
         private ClipboardChangedCallbackWithData? _clipboardChangedCallbackWithData;
         private string? _lastStringData;
 
+        /// <inheritdoc/>
         public event EventHandler<WinClipboardChangedEventArgs>? ClipboardChanged;
 
+        /// <inheritdoc/>
         public bool IsMonitoring { get; private set; }
 
         public WindowsClipboardListener()
@@ -42,6 +46,7 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
             SetNotificationType(NotificationType.ChangedWithData);
         }
 
+        /// <inheritdoc/>
         public void SetNotificationType(NotificationType notificationType)
         {
             if (_notificationType == notificationType) return;
@@ -55,6 +60,7 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
             SetCallbacks();
         }
 
+        /// <inheritdoc/>
         public void Start()
         {
             if (IsMonitoring) return;
@@ -68,6 +74,7 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
             IsMonitoring = true;
         }
 
+        /// <inheritdoc/>
         public void Stop()
         {
             if (!IsMonitoring) return;
@@ -80,6 +87,9 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
             IsMonitoring = false;
         }
 
+        /// <summary>
+        /// Sets callbacks according as per notification type set.
+        /// </summary>
         private void SetCallbacks()
         {
             switch (_notificationType)
@@ -101,6 +111,9 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
             _callbacksSet = true;
         }
 
+        /// <summary>
+        /// Removes all callbacks.
+        /// </summary>
         private void RemoveCallbacks()
         {
             SetCallbacksNoData(true);
@@ -109,6 +122,10 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
             _callbacksSet = false;
         }
 
+        /// <summary>
+        /// Sets or unsets callbacks for clipboard changed with no data
+        /// </summary>
+        /// <param name="unset">True to unset, or false (default) to set.</param>
         private void SetCallbacksNoData(bool unset = false)
         {
             if (unset)
@@ -123,6 +140,10 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
             }
         }
 
+        /// <summary>
+        /// Sets or unsets callbacks for clipboard changed with data
+        /// </summary>
+        /// <param name="unset">True to unset, or false (default) to set.</param>
         private void SetCallbacksWithData(bool unset = false)
         {
             if (unset)
@@ -137,20 +158,29 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
             }
         }
 
+        /// <summary>
+        /// Starts the listener in a separate thread so not to lock the UI / main thread.
+        /// </summary>
         private async void StartListener()
         {
             StartClipboardListener();
             await Task.CompletedTask;
         }
 
-        // Add additional methods as needed, depending on what you need from your C++ DLL
-        // The callback function called when the clipboard changes
+        /// <summary>
+        /// Clipboard changed callback with no data.
+        /// </summary>
         private void OnClipboardChangedNoData()
         {
-            Console.WriteLine("Clipboard content changed"); // Debug only
+            Console.WriteLine("Clipboard content changed"); // Debug only - to be removed
             OnClipboardChanged(new WinClipboardChangedEventArgs(ClipboardDataType.NONE));
         }
 
+        /// <summary>
+        /// Clipboard changed callback with data.
+        /// </summary>
+        /// <param name="data">String data, such as clipboard text or files.</param>
+        /// <param name="type">Type of data (i.e. text, files, or image).</param>
         private void OnClipboardChangedWithData(string data, int type)
         {
             var dataType = (ClipboardDataType)type;
@@ -160,7 +190,7 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
                 case ClipboardDataType.TEXT:
                     if (IsNewClipboardData(data))
                     {
-                        Console.WriteLine("Text copied: " + data); // Debug only
+                        Console.WriteLine("Text copied: " + data); // Debug only - to be removed
                         OnClipboardChanged(new WinClipboardChangedEventArgs(data, ClipboardDataType.TEXT));
                     }
                     break;
@@ -168,7 +198,7 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
                 case ClipboardDataType.FILES:
                     if (IsNewClipboardData(data))
                     {
-                        Console.WriteLine("Files copied: " + data); // Debug only
+                        Console.WriteLine("Files copied: " + data); // Debug only - to be removed
                         OnClipboardChanged(new WinClipboardChangedEventArgs(data, ClipboardDataType.FILES));
                     }
                     break;
@@ -176,17 +206,22 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
                 case ClipboardDataType.IMAGE:
                     if (GetBitmapFromClipboard() is Bitmap bitmap)
                     {
-                        Console.WriteLine("Image copied"); // Debug only
+                        Console.WriteLine("Image copied"); // Debug only - to be removed
                         OnClipboardChanged(new WinClipboardChangedEventArgs(bitmap, ClipboardDataType.IMAGE));
                     }
                     break;
 
                 default:
-                    Console.WriteLine("Unknown clipboard event"); // Debug only
+                    Console.WriteLine("Unknown clipboard event"); // Debug only - to be removed
                     break;
             }
         }
 
+        /// <summary>
+        /// Checks whether the clipboard data is new or repeat of the last addition.
+        /// </summary>
+        /// <param name="data">Clipboard data.</param>
+        /// <returns>True if the clipboard data is new from last sequence, otherwise false for duplicate.</returns>
         public bool IsNewClipboardData(string data)
         {
             if (string.IsNullOrEmpty(data) || data == _lastStringData)
@@ -196,6 +231,10 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
             return true;
         }
 
+        /// <summary>
+        /// Uses Windows native methods to get image data from the clipboard.
+        /// </summary>
+        /// <returns>Image (bitmap) if available.</returns>
         private Bitmap? GetBitmapFromClipboard()
         {
             Bitmap? bitmap = null;
@@ -227,6 +266,10 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
             return bitmap;
         }
 
+        /// <summary>
+        /// Clipboard changed event handler.
+        /// </summary>
+        /// <param name="e">Windows clipboard changed event arguments.</param>
         private void OnClipboardChanged(WinClipboardChangedEventArgs e) => ClipboardChanged?.Invoke(this, e);
     }
 }

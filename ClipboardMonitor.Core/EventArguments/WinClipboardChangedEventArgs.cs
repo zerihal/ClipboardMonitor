@@ -5,6 +5,9 @@ namespace ClipboardMonitor.Core.EventArguments
 {
     public class WinClipboardChangedEventArgs : ClipboardChangedEventArgs
     {
+        /// <summary>
+        /// Clipboard image (if applicable).
+        /// </summary>
         public Bitmap? ClipboardImage { get; }
 
         public WinClipboardChangedEventArgs(Bitmap? clipboardImage, ClipboardDataType type) : base(type)
