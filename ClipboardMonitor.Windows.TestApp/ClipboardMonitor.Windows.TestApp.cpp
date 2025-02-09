@@ -19,7 +19,7 @@ void OnClipboardChangedWithData(const char* clipboardData, int type) {
     if (clipboardData != nullptr) {
         std::cout << "Clipboard content changed with data" << std::endl;
 
-        if (type == 3 || type == 4) {
+        if (type == 3) {
             std::cout << "Data: Image" << std::endl;
         }
         else {

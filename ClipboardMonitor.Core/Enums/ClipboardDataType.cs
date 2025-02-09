@@ -5,8 +5,7 @@
         NONE,
         TEXT,
         FILES,
-        IMG_BITMAP,
-        IMG_DIB,
-        IMAGE
+        IMAGE,
+        OTHER
     }
 }

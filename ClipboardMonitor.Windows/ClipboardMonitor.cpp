@@ -15,8 +15,8 @@ ClipboardChangedCallbackWithData g_callback = nullptr;
 enum ClipboardDataType {
     TEXT = 1,
     FILES = 2,
-    IMG_BITMAP = 3,
-    IMG_DIB = 4
+    IMAGE = 3,
+    OTHER = 4
 };
 
 // Function to retrieve text from the clipboard
@@ -56,97 +56,11 @@ std::string GetClipboardFiles() {
     return fileList;
 }
 
-std::vector<BYTE> GetClipboardBitmapData() {
-    std::vector<BYTE> imageData;
-
-    if (!OpenClipboard(nullptr)) return imageData;
-
-    HANDLE hData = GetClipboardData(CF_BITMAP);  // Get the CF_BITMAP format
-    if (hData == nullptr) return imageData;
-
-    HBITMAP hBitmap = (HBITMAP)hData;
-    if (hBitmap == nullptr) return imageData;
-
-    // Create a device context to work with the bitmap
-    HDC hdc = GetDC(nullptr);
-    if (hdc == nullptr) return imageData;
-
-    // Get the bitmap information
-    BITMAP bmp;
-    if (GetObject(hBitmap, sizeof(bmp), &bmp) == 0) {
-        ReleaseDC(nullptr, hdc);
-        return imageData;
-    }
-
-    // Prepare a buffer for the bitmap data
-    BITMAPINFO bmi;
-    memset(&bmi, 0, sizeof(bmi));
-    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    bmi.bmiHeader.biWidth = bmp.bmWidth;
-    bmi.bmiHeader.biHeight = bmp.bmHeight;
-    bmi.bmiHeader.biPlanes = 1;
-    bmi.bmiHeader.biBitCount = 24;  // Assuming 24 bits per pixel
-    bmi.bmiHeader.biCompression = BI_RGB;
-
-    // Allocate memory to hold the bitmap bits
-    int size = bmp.bmWidthBytes * bmp.bmHeight;
-    imageData.resize(size);
-
-    // Get the bitmap data into the imageData vector
-    if (GetDIBits(hdc, hBitmap, 0, bmp.bmHeight, imageData.data(), &bmi, DIB_RGB_COLORS) == 0) {
-        imageData.clear();  // If getting the data failed
-    }
-
-    // Clean up
-    ReleaseDC(nullptr, hdc);
-    CloseClipboard();
-
-    return imageData;
-}
-
-// Function to extract image (CF_DIB) from clipboard and return it as binary data
-std::vector<BYTE> GetClipboardImageData() {
-    std::vector<BYTE> imageData;
-
-    if (!OpenClipboard(nullptr)) return imageData;
-
-    HANDLE hData = GetClipboardData(CF_DIB);  // Get the DIB format data
-    if (hData == nullptr) return imageData;
-
-    // Lock the data and get the raw bytes
-    void* pData = GlobalLock(hData);
-    if (pData == nullptr) return imageData;
-
-    // Copy data into vector (binary)
-    DWORD size = GlobalSize(hData);
-    imageData.resize(size);
-    memcpy(imageData.data(), pData, size);
-
-    GlobalUnlock(hData);
-    CloseClipboard();
-    return imageData;
-}
-
-// Function to handle clipboard image (CF_BITMAP) format
-void HandleClipboardImage(ClipboardDataType type) {
-    if (g_callback != nullptr) {
-        std::vector<BYTE> imgData = type == IMG_DIB ? GetClipboardImageData() : GetClipboardBitmapData();
-
-        // If we got image data, call the callback
-        if (!imgData.empty()) {
-            // Pass the image data as a pointer to the callback
-            g_callback(reinterpret_cast<const char*>(imgData.data()), type);
-        }
-        else {
-            g_callback("No image data", type);
-        }
-    }
-}
 
 // Function to check if clipboard contains an image
-//bool IsClipboardImage() {
-//    return IsClipboardFormatAvailable(CF_BITMAP) || IsClipboardFormatAvailable(CF_DIB);
-//}
+bool IsClipboardImage() {
+    return IsClipboardFormatAvailable(CF_BITMAP) || IsClipboardFormatAvailable(CF_DIB);
+}
 
 // Callback function for clipboard changes
 LRESULT CALLBACK ClipboardProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -167,12 +81,11 @@ LRESULT CALLBACK ClipboardProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
                 std::string files = GetClipboardFiles();
                 g_callback(files.c_str(), FILES);
             }
-            else if (IsClipboardFormatAvailable(CF_BITMAP)) {
-                //g_callback("Clipboard contains an image", IMAGE);
-                HandleClipboardImage(IMG_BITMAP);
+            else if (IsClipboardImage()) {
+                g_callback("ClipboardImage", IMAGE);
             }
-            else if (IsClipboardFormatAvailable(CF_DIB)) {
-                HandleClipboardImage(IMG_DIB);
+            else {
+                g_callback("UnsupportedType", OTHER);
             }
         }
     }

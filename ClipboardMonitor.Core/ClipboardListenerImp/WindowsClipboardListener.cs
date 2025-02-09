@@ -31,7 +31,7 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
         private bool _callbacksSet;
         private ClipboardChangedCallback? _clipboardChangedCallbackNoData;
         private ClipboardChangedCallbackWithData? _clipboardChangedCallbackWithData;
-        private string _lastStringData;
+        private string? _lastStringData;
 
         public event EventHandler<WinClipboardChangedEventArgs>? ClipboardChanged;
 
@@ -173,8 +173,7 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
                     }
                     break;
 
-                case ClipboardDataType.IMG_BITMAP:
-                case ClipboardDataType.IMG_DIB:
+                case ClipboardDataType.IMAGE:
                     if (GetBitmapFromClipboard() is Bitmap bitmap)
                     {
                         Console.WriteLine("Image copied"); // Debug only

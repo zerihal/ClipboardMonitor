@@ -1,21 +1,25 @@
-﻿using ClipboardMonitor.Core.ClipboardListenerImp;
-using ClipboardMonitor.Core.Enums;
+﻿using ClipboardMonitor.Core.Enums;
 using ClipboardMonitor.Core.EventArguments;
+using ClipboardMonitor.Core.Factories;
+using ClipboardMonitor.Core.Interfaces;
 using System;
+using System.Drawing.Imaging;
 
 internal class Program
 {
     static void Main()
     {
-        Console.WriteLine("Starting clipboard listener from .NET...");
+        Console.WriteLine("Starting clipboard listener ...");
 
-        var clipboardListener = new WindowsClipboardListener();
+        var clipboardListener = ClipboardListenerFactory.CreateClipboardListener<IWindowsClipboardListener>();
         clipboardListener.ClipboardChanged += ClipboardListener_ClipboardChanged;
         clipboardListener.Start();
 
 
         Console.WriteLine("Press Enter to exit...");
         Console.ReadLine();
+
+        clipboardListener.Stop();
     }
 
     private static void ClipboardListener_ClipboardChanged(object? sender, WinClipboardChangedEventArgs e)
@@ -24,10 +28,11 @@ internal class Program
 
         if (e.DataType == ClipboardDataType.IMAGE && e.ClipboardImage != null)
         {
-            // Try and convert to a bitmap and save
             try
             {
+                // Output width and try and save the file to check that we've got it ok
                 Console.WriteLine(e.ClipboardImage.Width);
+                e.ClipboardImage.Save(@"C:\Temp\clippic.jpg", ImageFormat.Jpeg);
             }
             catch (Exception ex)
             {
