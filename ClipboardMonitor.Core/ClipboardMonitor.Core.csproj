@@ -9,6 +9,14 @@
     <Authors>JPS</Authors>
     <Company>JPS</Company>
     <Description>Clipboard monitor that can be hooked into to notify when clipboard is changed and what data it contains (optional).</Description>
+    <PackageLicenseFile>Licence.txt</PackageLicenseFile>
+    <PackageReadmeFile>README (External).md</PackageReadmeFile>
+    <PackageProjectUrl></PackageProjectUrl>
+    <RepositoryUrl>https://github.com/zerihal/ClipboardMonitor</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>clipboard;windows;monitor</PackageTags>
+    <AssemblyVersion>1.0.0.1</AssemblyVersion>
+    <FileVersion>1.0.0.1</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,6 +29,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\Licence.txt">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\README (External).md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
     <None Include="runtimes\win-x64\native\ClipboardMonitor.Windows.dll" Pack="true" PackagePath="runtimes/win-x64/native" />
     <None Include="runtimes\linux-x64\native\libClipboardMonitor.Linux.so" Pack="true" PackagePath="runtimes/linux-x64/native" />
     <!--<None Include="runtimes\osx-x64\native\libClipboardMonitor.Mac.dylib" Pack="true" PackagePath="runtimes/osx-x64/native" />-->
