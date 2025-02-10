@@ -4,10 +4,26 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>Clipboard Monitor</Title>
+    <Authors>JPS</Authors>
+    <Company>JPS</Company>
+    <Description>Clipboard monitor that can be hooked into to notify when clipboard is changed and what data it contains (optional).</Description>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Drawing.Common" Version="9.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="runtimes\linux-x64\native\" />
+    <Folder Include="runtimes\osx-x64\native\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="runtimes\win-x64\native\ClipboardMonitor.Windows.dll" Pack="true" PackagePath="runtimes/win-x64/native" />
+    <None Include="runtimes\linux-x64\native\libClipboardMonitor.Linux.so" Pack="true" PackagePath="runtimes/linux-x64/native" />
+    <!--<None Include="runtimes\osx-x64\native\libClipboardMonitor.Mac.dylib" Pack="true" PackagePath="runtimes/osx-x64/native" />-->
   </ItemGroup>
 
 </Project>

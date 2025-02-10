@@ -118,6 +118,10 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <PostBuildEvent>
+      <Command>if not exist "$(SolutionDir)ClipboardMonitor.Core\runtimes\win-x64\native" mkdir "$(SolutionDir)ClipboardMonitor.Core\runtimes\win-x64\native"
+copy /Y "$(TargetDir)ClipboardMonitor.Windows.dll" "$(SolutionDir)ClipboardMonitor.Core\runtimes\win-x64\native\ClipboardMonitor.Windows.dll"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -127,7 +131,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;CLIPBOARDMONITORWINDOWS_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
