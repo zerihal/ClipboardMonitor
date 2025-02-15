@@ -222,7 +222,7 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
         /// </summary>
         /// <param name="data">Clipboard data.</param>
         /// <returns>True if the clipboard data is new from last sequence, otherwise false for duplicate.</returns>
-        public bool IsNewClipboardData(string data)
+        private bool IsNewClipboardData(string data)
         {
             if (string.IsNullOrEmpty(data) || data == _lastStringData)
                 return false;

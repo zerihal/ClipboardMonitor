@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClipboardMonitor.Core", "Cl
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClipboardMonitor.Linux", "ClipboardMonitor.Linux\ClipboardMonitor.Linux.vcxproj", "{F6352307-8D56-4148-A132-E3B0FEF4FB96}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LinuxTestApp", "LinuxTestApp\LinuxTestApp.csproj", "{7EA74011-0EBF-485E-BA3D-BBACB8E88220}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -89,6 +91,18 @@ Global
 		{F6352307-8D56-4148-A132-E3B0FEF4FB96}.Release|x86.ActiveCfg = Release|x86
 		{F6352307-8D56-4148-A132-E3B0FEF4FB96}.Release|x86.Build.0 = Release|x86
 		{F6352307-8D56-4148-A132-E3B0FEF4FB96}.Release|x86.Deploy.0 = Release|x86
+		{7EA74011-0EBF-485E-BA3D-BBACB8E88220}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7EA74011-0EBF-485E-BA3D-BBACB8E88220}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7EA74011-0EBF-485E-BA3D-BBACB8E88220}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7EA74011-0EBF-485E-BA3D-BBACB8E88220}.Debug|x64.Build.0 = Debug|Any CPU
+		{7EA74011-0EBF-485E-BA3D-BBACB8E88220}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7EA74011-0EBF-485E-BA3D-BBACB8E88220}.Debug|x86.Build.0 = Debug|Any CPU
+		{7EA74011-0EBF-485E-BA3D-BBACB8E88220}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7EA74011-0EBF-485E-BA3D-BBACB8E88220}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7EA74011-0EBF-485E-BA3D-BBACB8E88220}.Release|x64.ActiveCfg = Release|Any CPU
+		{7EA74011-0EBF-485E-BA3D-BBACB8E88220}.Release|x64.Build.0 = Release|Any CPU
+		{7EA74011-0EBF-485E-BA3D-BBACB8E88220}.Release|x86.ActiveCfg = Release|Any CPU
+		{7EA74011-0EBF-485E-BA3D-BBACB8E88220}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

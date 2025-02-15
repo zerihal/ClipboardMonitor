@@ -23,7 +23,7 @@ enum ClipboardDataType {
 
 class ClipboardListener {
 public:
-    ClipboardListener(ClipboardChangedCallback callback) : callback_(callback) {
+    ClipboardListener() {
         // Initialize the X11 display
         display_ = XOpenDisplay(NULL);
         if (!display_) {
@@ -122,12 +122,11 @@ private:
 private:
     Display* display_;
     Window window_;
-    ClipboardChangedCallback callback_;
 };
 
 // Expose a function to start the clipboard listener
-extern "C" __attribute__((visibility("default"))) void StartClipboardListener(ClipboardChangedCallback callback) {
-    ClipboardListener* listener = new ClipboardListener(callback);
+extern "C" __attribute__((visibility("default"))) void StartClipboardListener() {
+    ClipboardListener* listener = new ClipboardListener();
     listener->start(); // This will block, so it will run indefinitely
 }
 
