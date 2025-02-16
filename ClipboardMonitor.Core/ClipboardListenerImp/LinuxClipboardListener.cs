@@ -31,6 +31,7 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
 
         public LinuxClipboardListener() 
         {
+            SetDllResolver(); // Ensure library is correctly loaded
             SetNotificationType(NotificationType.ChangedWithData);
         }
 
@@ -78,6 +79,20 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
         {
             Console.WriteLine("ClipboardChanged with data");
             OnClipboardChanged(new LinuxClipboardChangedEventArgs(ClipboardDataType.OTHER));
+        }
+
+        private void SetDllResolver()
+        {
+            NativeLibrary.SetDllImportResolver(typeof(LinuxClipboardListener).Assembly, (libraryName, assembly, searchPath) =>
+            {
+                if (libraryName == LibName)
+                {
+                    string libPath = Path.Combine(AppContext.BaseDirectory, LibName);
+                    Console.WriteLine($"Loading Clipboard Library from: {libPath}");
+                    return NativeLibrary.Load(libPath);
+                }
+                return IntPtr.Zero;
+            });
         }
 
         /// <summary>
