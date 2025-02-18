@@ -6,6 +6,11 @@
 #include <cstring>
 
 // *** NOTE: THIS REQUIRES REMOTE CONNECTION TO LINUX MACHINE TO BE CONFIGURED OR WSL (IN BUILDING IN WINDOWS) TO COMPILE ***
+// *** BUG: 
+// WHILE THIS CAN BE CALLED OK FROM THE .NET LAYER, IT DOES NOT SEEM TO RECEIVE CLIPBOARD CHANGED EVENTS (ON UBUNTU TEST MACHINE). 
+// THIS COULD BE DUE TO CLIPBOARD OWNERSHIP BEING LOST OR THE EVENT LOOP GETTING BLOCKED, SO MAY NEED TO CONSIDER ALTERNATIVE
+// IMPLEMENTATION FOR LINUX.
+// *** ***
 
 // Define callback types
 typedef void (*ClipboardChangedCallback)();
@@ -23,7 +28,7 @@ enum ClipboardDataType {
 
 class ClipboardListener {
 public:
-    ClipboardListener(ClipboardChangedCallback callback) : callback_(callback) {
+    ClipboardListener() {
         // Initialize the X11 display
         display_ = XOpenDisplay(NULL);
         if (!display_) {
@@ -126,8 +131,8 @@ private:
 };
 
 // Expose a function to start the clipboard listener
-extern "C" __attribute__((visibility("default"))) void StartClipboardListener(ClipboardChangedCallback callback) {
-    ClipboardListener* listener = new ClipboardListener(callback);
+extern "C" __attribute__((visibility("default"))) void StartClipboardListener() {
+    ClipboardListener* listener = new ClipboardListener();
     listener->start(); // This will block, so it will run indefinitely
 }
 
