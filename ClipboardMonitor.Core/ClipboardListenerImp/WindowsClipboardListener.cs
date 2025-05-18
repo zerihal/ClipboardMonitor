@@ -1,8 +1,11 @@
 ﻿using ClipboardMonitor.Core.Enums;
 using ClipboardMonitor.Core.EventArguments;
 using ClipboardMonitor.Core.Interfaces;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 
 namespace ClipboardMonitor.Core.ClipboardListenerImp
 {
@@ -34,12 +37,16 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
         private ClipboardChangedCallback? _clipboardChangedCallbackNoData;
         private ClipboardChangedCallbackWithData? _clipboardChangedCallbackWithData;
         private string? _lastStringData;
+        private string? _lastImageHash;
 
         /// <inheritdoc/>
         public event EventHandler<WinClipboardChangedEventArgs>? ClipboardChanged;
 
         /// <inheritdoc/>
         public bool IsMonitoring { get; private set; }
+
+        /// <inheritdoc/>
+        public bool VerifyNewImageData { get; set; } = false;
 
         public WindowsClipboardListener()
         {
@@ -204,10 +211,14 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
                     break;
 
                 case ClipboardDataType.IMAGE:
-                    if (GetBitmapFromClipboard() is Bitmap bitmap)
+                    if (GetBitmapFromClipboard() is Bitmap bitmap && IsNewImageData(bitmap))
                     {
                         Console.WriteLine("Image copied"); // Debug only - to be removed
                         OnClipboardChanged(new WinClipboardChangedEventArgs(bitmap, ClipboardDataType.IMAGE));
+
+                        // New clipboard data is image, so clear the last string data as if same text is copied again now it
+                        // will be new clipboard data.
+                        _lastStringData = null;
                     }
                     break;
 
@@ -228,6 +239,14 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
                 return false;
 
             _lastStringData = data;
+
+            if (VerifyNewImageData)
+            {
+                // New clipboard data is text, so clear the last image hash as if same image is copied again now it
+                // will be new clipboard data.
+                _lastImageHash = null;
+            }
+
             return true;
         }
 
@@ -264,6 +283,51 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
                 }
             }
             return bitmap;
+        }
+
+        /// <summary>
+        /// Gets a hash from the image.
+        /// </summary>
+        /// <param name="bmp">Bitmap to get a hash for.</param>
+        /// <returns>SHA256 hash string.</returns>
+        [SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Win 7 and above only implementation.")]
+        private string GetImageHash(Bitmap bmp)
+        {
+            using (var ms = new MemoryStream())
+            {
+                // Save as PNG to avoid compression artifacts
+                bmp.Save(ms, ImageFormat.Png);
+                using (var sha = SHA256.Create())
+                {
+                    var hash = sha.ComputeHash(ms.ToArray());
+                    return Convert.ToBase64String(hash);   
+                }
+            }
+        }
+
+        /// <summary>
+        /// Checks whether the new image is different from the last that was copied to the clipboard (if image) by comparing the new image hash to that
+        /// of the previous image in the clipboard.
+        /// </summary>
+        /// <param name="bmp">New image bitmap.</param>
+        /// <returns><see langword="True"/> if the image data is new or <see langword="false"/> if identical to the previous clipboard data.</returns>
+        private bool IsNewImageData(Bitmap bmp)
+        {
+            // If verify new image data is not enabled, always return true to treat as new image as this is not to be checked
+            if (!VerifyNewImageData)
+                return true;
+
+            var newHash = GetImageHash(bmp);
+
+            if (_lastImageHash != newHash)
+            {
+                _lastImageHash = newHash;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>
