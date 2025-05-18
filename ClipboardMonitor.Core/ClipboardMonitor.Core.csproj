@@ -5,6 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
     <Title>Clipboard Monitor</Title>
     <Authors>JPS</Authors>
     <Company>JPS</Company>
@@ -15,9 +17,10 @@
     <RepositoryUrl>https://github.com/zerihal/ClipboardMonitor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>clipboard;windows;monitor</PackageTags>
-    <AssemblyVersion>1.0.1.1</AssemblyVersion>
-    <FileVersion>1.0.1.1</FileVersion>
-    <Version>1.0.1.1</Version>
+    <AssemblyVersion>1.0.2.0</AssemblyVersion>
+    <FileVersion>1.0.2.0</FileVersion>
+    <Version>1.0.2.0</Version>
+    <IncludeDocumentationFile>true</IncludeDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
