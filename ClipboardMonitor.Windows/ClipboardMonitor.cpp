@@ -3,21 +3,11 @@
 #include <shlobj.h>   // For HDROP (file paths)
 #include <vector>
 #include <string>
-
-// Define callback types
-typedef void (*ClipboardChangedCallback)();
-typedef void (*ClipboardChangedCallbackWithData)(const char* data, int type);
+#include "ClipboardMonitor.h"
 
 // Global variables for storing callbacks
 ClipboardChangedCallback g_clipboardCallback = nullptr;
 ClipboardChangedCallbackWithData g_callback = nullptr;
-
-enum ClipboardDataType {
-    TEXT = 1,
-    FILES = 2,
-    IMAGE = 3,
-    OTHER = 4
-};
 
 // Function to retrieve text from the clipboard
 std::string GetClipboardText() {
@@ -71,7 +61,7 @@ LRESULT CALLBACK ClipboardProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
         }
 
         // Ensure the callback with data is valid before invoking it
-        // ToDo: Don't bother passing back the image data now - we will handle this on the .NET core side
+        // Update: Don't bother passing back the image data now - we will handle this on the .NET core side
         if (g_callback != nullptr) {
             if (IsClipboardFormatAvailable(CF_TEXT)) {
                 std::string text = GetClipboardText();
@@ -114,12 +104,12 @@ extern "C" __declspec(dllexport) void StartClipboardListener() {
     }
 }
 
-// Function to set the callback for clipboard changes
-extern "C" __declspec(dllexport) void SetClipboardChangedCallback(ClipboardChangedCallback callback) {
+// Function to set the callback for clipboard changes (see header file for export to replace extern "c" [...])
+void SetClipboardChangedCallback(ClipboardChangedCallback callback) {
     g_clipboardCallback = callback;
 }
 
-// Function to set the callback for clipboard changes with data and type
-extern "C" __declspec(dllexport) void SetClipboardChangedCallbackWithData(ClipboardChangedCallbackWithData callback) {
+// Function to set the callback for clipboard changes with data and type (see header file for export to replace extern "c" [...])
+void SetClipboardChangedCallbackWithData(ClipboardChangedCallbackWithData callback) {
     g_callback = callback;
 }

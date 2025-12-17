@@ -146,6 +146,9 @@ copy /Y "$(TargetDir)ClipboardMonitor.Windows.dll" "$(SolutionDir)ClipboardMonit
     <ClCompile Include="ClipboardMonitor.cpp" />
     <ClCompile Include="dllmain.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ClipboardMonitor.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
