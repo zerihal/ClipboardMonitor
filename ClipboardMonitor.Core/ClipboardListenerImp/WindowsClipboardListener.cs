@@ -18,13 +18,17 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void ClipboardChangedCallbackWithData([MarshalAs(UnmanagedType.LPStr)] string data, int type);
 
-        // Import SetClipboardChangedCallback function from the DLL
-        [DllImport("ClipboardMonitor.Windows.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void SetClipboardChangedCallback(ClipboardChangedCallback? callback);
-
         // Import StartClipboardListener function from the DLL
         [DllImport("ClipboardMonitor.Windows.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void StartClipboardListener();
+
+        // Import StopClipboardListener function from the DLL
+        [DllImport("ClipboardMonitor.Windows.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void StopClipboardListener();
+
+        // Import SetClipboardChangedCallback function from the DLL
+        [DllImport("ClipboardMonitor.Windows.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void SetClipboardChangedCallback(ClipboardChangedCallback? callback);
 
         // Import SetClipboardChangedCallbackWithData function from the DLL
         [DllImport("ClipboardMonitor.Windows.dll", CallingConvention = CallingConvention.Cdecl)]
@@ -87,6 +91,7 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
             if (!IsMonitoring) return;
 
             RemoveCallbacks();
+            StopClipboardListener();
             _clipboardMonitorTokenCts?.Cancel();
             _clipboardMonitorTokenCts = null;
             _clipboardMonitorTask = null;

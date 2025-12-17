@@ -4,6 +4,9 @@
     <Filter Include="Source Files">
       <UniqueIdentifier>{14990db6-aa2f-44a7-82b7-21f2e0b5b90d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{b15a16d2-06fb-4ffe-9906-39512ba4fdc1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ClipboardMonitor.cpp">

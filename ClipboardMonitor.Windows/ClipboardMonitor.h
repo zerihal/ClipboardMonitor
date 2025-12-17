@@ -2,9 +2,9 @@
 
 #ifdef _WIN32
 #ifdef CLIPBOARD_EXPORTS
-#define CLIPBOARD_API __declspec(dllexport)
+#define CLIPBOARD_API extern "C" __declspec(dllexport)
 #else
-#define CLIPBOARD_API __declspec(dllimport)
+#define CLIPBOARD_API extern "C" __declspec(dllimport)
 #endif
 #else
 #define CLIPBOARD_API
@@ -27,7 +27,9 @@ extern "C" {
         NONE = 5
     } ClipboardDataType;
 
-    // Callback setters
+    // Methods and callback setters
+    CLIPBOARD_API void StartClipboardListener();
+    CLIPBOARD_API void StopClipboardListener();
     CLIPBOARD_API void SetClipboardChangedCallback(ClipboardChangedCallback callback);
     CLIPBOARD_API void SetClipboardChangedCallbackWithData(ClipboardChangedCallbackWithData callback);
 
