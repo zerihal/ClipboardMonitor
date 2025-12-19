@@ -5,11 +5,6 @@ namespace ClipboardMonitor.Core.Interfaces
     public interface IWindowsClipboardListener : IClipboardListener
     {
         /// <summary>
-        /// Clipboard changed event.
-        /// </summary>
-        event EventHandler<WinClipboardChangedEventArgs>? ClipboardChanged;
-
-        /// <summary>
         /// Flag to verify whether new image data is the same as previous image data that was in the clipboard
         /// (default <see langword="false"/>).
         /// </summary>
