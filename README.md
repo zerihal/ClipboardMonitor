@@ -61,3 +61,15 @@ private void ClipboardListener_ClipboardChanged(object? sender, ClipboardChanged
   }
 }
 ```
+### Linux Prerequisites
+
+The Linux native binary (`libClipboardMonitor.Linux.so`) depends on X11 for clipboard access. 
+
+Before using the package on Linux, ensure the following libraries are installed:
+
+- Debian / Ubuntu:
+  ```bash
+  sudo apt-get install libx11-dev
+- Fedora / RHEL:
+  ```bash
+  sudo dnf install libX11-devel
