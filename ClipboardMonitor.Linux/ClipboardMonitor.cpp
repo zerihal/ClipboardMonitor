@@ -1,139 +1,208 @@
-#include <iostream>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
-#include <X11/Xutil.h>
-#include <X11/keysym.h>
 #include <cstring>
-
-// *** NOTE: THIS REQUIRES REMOTE CONNECTION TO LINUX MACHINE TO BE CONFIGURED OR WSL (IN BUILDING IN WINDOWS) TO COMPILE ***
-// *** BUG: 
-// WHILE THIS CAN BE CALLED OK FROM THE .NET LAYER, IT DOES NOT SEEM TO RECEIVE CLIPBOARD CHANGED EVENTS (ON UBUNTU TEST MACHINE). 
-// THIS COULD BE DUE TO CLIPBOARD OWNERSHIP BEING LOST OR THE EVENT LOOP GETTING BLOCKED, SO MAY NEED TO CONSIDER ALTERNATIVE
-// IMPLEMENTATION FOR LINUX.
-// *** ***
-
-// Define callback types
-typedef void (*ClipboardChangedCallback)();
-typedef void (*ClipboardChangedCallbackWithData)(const char* data, int type);
+#include <iostream>
+#include <fstream>
+#include <thread>
+#include <chrono>
+#include <vector>
+//#include <openssl/sha.h>  // For SHA256 hashing
+#include <iomanip>
+#include <sstream>
+#include <atomic>
+#include "ClipboardMonitor.h"
+#include "sha256.h"
 
 // Global variables for storing callbacks
 ClipboardChangedCallback g_clipboardCallback = nullptr;
 ClipboardChangedCallbackWithData g_callback = nullptr;
 
-enum ClipboardDataType {
-    TEXT = 1,
-    FILES = 2,
-    IMAGE = 3
-};
-
 class ClipboardListener {
 public:
-    ClipboardListener() {
-        // Initialize the X11 display
-        display_ = XOpenDisplay(NULL);
-        if (!display_) {
-            std::cerr << "Cannot open X11 display" << std::endl;
-            exit(1);
+    ClipboardListener() : running_(true) {}
+
+    void monitorClipboard() {
+        Display* display = XOpenDisplay(nullptr);
+        if (!display) {
+            std::cerr << "Failed to open X display." << std::endl;
+            return;
         }
 
-        // Create a window to listen to events
-        window_ = XCreateSimpleWindow(display_, DefaultRootWindow(display_), 0, 0, 1, 1, 0, 0, 0);
-        XSelectInput(display_, window_, PropertyChangeMask);
+        Atom utf8 = XInternAtom(display, "UTF8_STRING", False);
+        Atom uriList = XInternAtom(display, "text/uri-list", False);
+        Atom property = XInternAtom(display, "XSEL_DATA", False);
 
-        // Start listening for events
-        XMapWindow(display_, window_);
-    }
+        std::vector<Atom> imageTargets = {
+            XInternAtom(display, "image/png", False),
+            XInternAtom(display, "image/bmp", False),
+            XInternAtom(display, "image/jpeg", False),
+            XInternAtom(display, "image/x-png", False)
+        };
 
-    ~ClipboardListener() {
-        if (display_) {
-            XCloseDisplay(display_);
+        std::string lastGlobalHash;
+
+        while (running_) {
+            std::vector<unsigned char> imageData;
+            std::string textData;
+            std::string uriData;
+            std::string content; // content passed to callback
+            size_t dataSize = 0;
+            ClipboardDataType dataType = NONE;
+
+            // --- Try image formats first ---
+            for (Atom target : imageTargets) {
+                imageData.clear();
+                getClipboardContent(display, target, property, imageData);
+                if (!imageData.empty()) {
+                    content.assign(reinterpret_cast<const char*>(imageData.data()), imageData.size());
+                    dataSize = imageData.size();
+                    dataType = IMAGE;
+                    break; // stop at first available image format
+                }
+            }
+
+            // --- Try URI if no image ---
+            if (dataType == NONE) {
+                std::vector<unsigned char> dummy;
+                uriData = getClipboardContent(display, uriList, property, dummy);
+                if (!uriData.empty()) {
+                    content = uriData;
+                    dataSize = content.size();
+                    dataType = FILES;
+                }
+            }
+
+            // --- Try UTF-8 text if no image or URI ---
+            if (dataType == NONE) {
+                std::vector<unsigned char> dummy;
+                textData = getClipboardContent(display, utf8, property, dummy);
+                if (!textData.empty()) {
+                    content = textData;
+                    dataSize = content.size();
+                    dataType = TEXT;
+                }
+            }
+
+            // --- Compute global hash to deduplicate across formats ---
+            std::string combinedHash;
+            combinedHash += std::string(imageData.begin(), imageData.end());
+            combinedHash += uriData;
+            combinedHash += textData;
+            std::string currentGlobalHash = SHA256::hash(combinedHash);
+
+            if (dataType != NONE && !currentGlobalHash.empty() && currentGlobalHash != lastGlobalHash) {
+                lastGlobalHash = currentGlobalHash;
+
+                // --- Trigger callback only once per logical copy ---
+                if (g_clipboardCallback != nullptr) {
+                    g_clipboardCallback();
+                }
+
+                if (g_callback != nullptr) {
+                    g_callback(content.c_str(), dataSize, dataType);
+                }
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
+
+        XCloseDisplay(display);
     }
 
-    void start() {
-        // Enter an infinite loop to listen for events
+
+    void stop() {
+        running_ = false;
+    }
+
+private:
+    std::string getClipboardContent(Display* display, Atom targetAtom, Atom propertyAtom, std::vector<unsigned char>& outBinary) {
+        Window window = XCreateSimpleWindow(display, DefaultRootWindow(display), 0, 0, 1, 1, 0, 0, 0);
+        Atom clipboard = XInternAtom(display, "CLIPBOARD", False);
+        Atom imagePng = XInternAtom(display, "image/png", False);
+        Atom imageBmp = XInternAtom(display, "image/bmp", False);
+        Atom imageJpeg = XInternAtom(display, "image/jpeg", False);
+        Atom imageXPng = XInternAtom(display, "image/x-png", False);
+
+        XConvertSelection(display, clipboard, targetAtom, propertyAtom, window, CurrentTime);
+        XFlush(display);
+
+        XEvent event;
+        auto start = std::chrono::steady_clock::now();
+        const int timeoutMs = 100; // 100 ms timeout
+
         while (true) {
-            XEvent event;
-            XNextEvent(display_, &event);
+            // Check if there is a pending event
+            if (XPending(display)) {
+                XNextEvent(display, &event);
+                if (event.type == SelectionNotify && event.xselection.selection == clipboard) {
+                    Atom actual_type;
+                    int actual_format;
+                    unsigned long nitems, bytes_after;
+                    unsigned char* prop = nullptr;
 
-            if (event.type == PropertyNotify) {
-                if (event.xproperty.state == ColormapNotify) {
-                    continue;
-                }
+                    int result = XGetWindowProperty(display, window, propertyAtom, 0, (~0L), False,
+                        AnyPropertyType, &actual_type, &actual_format,
+                        &nitems, &bytes_after, &prop);
 
-                // Check if the clipboard has been updated
-                if (event.xproperty.atom == XA_PRIMARY || event.xproperty.atom == XA_SECONDARY) {
-                    checkClipboard();
+                    if (result == Success && prop) {
+                        std::string str;
+
+                        bool isImage =
+                            actual_type == imagePng ||
+                            actual_type == imageBmp ||
+                            actual_type == imageJpeg ||
+                            actual_type == imageXPng;
+
+                        if (isImage) {
+                            outBinary.assign(prop, prop + nitems);
+                        }
+                        else {
+                            str.assign(reinterpret_cast<char*>(prop), nitems);
+                        }
+
+                        //if (targetAtom == XInternAtom(display, "image/png", False)) {
+                        //    outBinary.assign(prop, prop + nitems);
+                        //}
+                        //else {
+                        //    str.assign(reinterpret_cast<char*>(prop), nitems);
+                        //}
+                        XFree(prop);
+                        XDestroyWindow(display, window);
+                        return str;
+                    }
+                    break;
                 }
             }
+
+            // Check timeout
+            auto now = std::chrono::steady_clock::now();
+            if (std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count() > timeoutMs) {
+                break; // exit loop on timeout
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
+
+        XDestroyWindow(display, window);
+        return "";
     }
 
-private:
-    void checkClipboard() {
-        // Get clipboard content from the primary selection
-        Atom clipboardAtom = XInternAtom(display_, "CLIPBOARD", False);
-        Atom utf8StringAtom = XInternAtom(display_, "UTF8_STRING", False);
-        Atom type;
-        int format;
-        unsigned long nItems, bytesAfter;
-        unsigned char* data = nullptr;
-
-        int result = XGetWindowProperty(display_, window_, clipboardAtom, 0, (~0L), False, AnyPropertyType,
-            &type, &format, &nItems, &bytesAfter, &data);
-
-        if (result == Success && data) {
-            if (g_clipboardCallback != nullptr) {
-                // Invoke the callback function when the clipboard changes
-                g_clipboardCallback();
-            }
-
-            if (g_callback != nullptr) {
-                // Check if the data is text, files, or image based on the Atom type
-                if (type == utf8StringAtom) {
-                    // Handle text clipboard data
-                    std::string clipboardData(reinterpret_cast<char*>(data), nItems);
-                    g_callback(clipboardData.c_str(), TEXT);
-                }
-                else if (type == XInternAtom(display_, "TEXT/URI_LIST", False)) {
-                    // Handle file URIs
-                    std::string clipboardData(reinterpret_cast<char*>(data), nItems);
-                    g_callback(clipboardData.c_str(), FILES);
-                }
-                else if (type == XInternAtom(display_, "image/png", False) ||
-                    type == XInternAtom(display_, "image/jpeg", False) ||
-                    type == XInternAtom(display_, "image/gif", False) ||
-                    type == XInternAtom(display_, "image/bmp", False) ||
-                    type == XInternAtom(display_, "image/tiff", False)) {
-                    // Handle known image clipboard data (PNG, JPEG, GIF, BMP, TIFF)
-                    std::string clipboardData(reinterpret_cast<char*>(data), nItems);
-                    g_callback(clipboardData.c_str(), IMAGE);
-                }
-                else if (type == XInternAtom(display_, "image/*", False)) {
-                    // Handle other image types (if supported by X11)
-                    std::string clipboardData(reinterpret_cast<char*>(data), nItems);
-                    g_callback(clipboardData.c_str(), IMAGE);
-                }
-                else {
-                    // If the image type is not recognized, handle it as an unsupported type
-                    std::cerr << "Unsupported image type on clipboard" << std::endl;
-                }
-            }
-
-            XFree(data);
-        }
-    }
 
 private:
-    Display* display_;
-    Window window_;
     ClipboardChangedCallback callback_;
+    std::atomic<bool> running_;
 };
 
-// Expose a function to start the clipboard listener
+// Clipboard listener
+ClipboardListener* g_listener = nullptr;
+
+// Expose a function to start the clipboard listener.
+// This call blocks and runs indefinitely until StopClipboardListener() is called externally.
 extern "C" __attribute__((visibility("default"))) void StartClipboardListener() {
-    ClipboardListener* listener = new ClipboardListener();
-    listener->start(); // This will block, so it will run indefinitely
+    if (!g_listener) {
+        g_listener = new ClipboardListener();
+        g_listener->monitorClipboard(); // Blocking call
+    }
 }
 
 // Function to set the callback for clipboard changes
@@ -150,4 +219,15 @@ extern "C" __attribute__((visibility("default"))) void SetClipboardChangedCallba
 extern "C" __attribute__((visibility("default"))) void StopClipboardListener() {
     // You could add a mechanism here to cleanly stop the listener if needed
     std::cout << "Stopping clipboard listener..." << std::endl;
+
+    if (g_listener) {
+        // Ensure callbacks are removed
+        g_clipboardCallback = nullptr;
+        g_callback = nullptr;
+
+        // Stop listener and clean up
+        g_listener->stop();
+        delete g_listener;
+        g_listener = nullptr;
+    }
 }

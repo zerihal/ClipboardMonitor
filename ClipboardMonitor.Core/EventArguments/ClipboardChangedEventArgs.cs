@@ -1,4 +1,6 @@
 ﻿using ClipboardMonitor.Core.Enums;
+using ClipboardMonitor.Core.Interfaces;
+using System.Drawing;
 
 namespace ClipboardMonitor.Core.EventArguments
 {
@@ -36,6 +38,24 @@ namespace ClipboardMonitor.Core.EventArguments
 
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Clipboard image (if applicable).
+        /// </summary>
+        public Bitmap? BmpClipboardImage { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public IClipboardImage ClipboardImage { get; }
+
+        public ClipboardChangedEventArgs(object? clipboardImage, ClipboardDataType type) : this(type)
+        {
+            if (clipboardImage is Bitmap bitmap)
+                BmpClipboardImage = bitmap;
+            else if (clipboardImage is IClipboardImage clipImg)
+                ClipboardImage = clipImg;
         }
 
         public ClipboardChangedEventArgs(string clipboardText, ClipboardDataType type) : this(type)

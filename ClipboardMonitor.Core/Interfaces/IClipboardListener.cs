@@ -1,9 +1,15 @@
 ﻿using ClipboardMonitor.Core.Enums;
+using ClipboardMonitor.Core.EventArguments;
 
 namespace ClipboardMonitor.Core.Interfaces
 {
     public interface IClipboardListener
     {
+        /// <summary>
+        /// Clipboard changed event.
+        /// </summary>
+        event EventHandler<ClipboardChangedEventArgs>? ClipboardChanged;
+
         /// <summary>
         /// Flag to indicate whether clipboard is listener is currently active.
         /// </summary>

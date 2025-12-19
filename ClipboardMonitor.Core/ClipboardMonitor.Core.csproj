@@ -17,10 +17,11 @@
     <RepositoryUrl>https://github.com/zerihal/ClipboardMonitor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>clipboard;windows;monitor</PackageTags>
-    <AssemblyVersion>1.0.2.1</AssemblyVersion>
-    <FileVersion>1.0.2.1</FileVersion>
-    <Version>1.0.2.1</Version>
+    <AssemblyVersion>2.0.0.1</AssemblyVersion>
+    <FileVersion>2.0.0.1</FileVersion>
+    <Version>2.0.0.1</Version>
     <IncludeDocumentationFile>true</IncludeDocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,7 +29,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="runtimes\linux-x64\native\" />
     <Folder Include="runtimes\osx-x64\native\" />
   </ItemGroup>
 

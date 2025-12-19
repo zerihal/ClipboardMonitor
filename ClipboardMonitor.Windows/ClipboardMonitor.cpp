@@ -3,21 +3,14 @@
 #include <shlobj.h>   // For HDROP (file paths)
 #include <vector>
 #include <string>
-
-// Define callback types
-typedef void (*ClipboardChangedCallback)();
-typedef void (*ClipboardChangedCallbackWithData)(const char* data, int type);
+#include "ClipboardMonitor.h"
 
 // Global variables for storing callbacks
 ClipboardChangedCallback g_clipboardCallback = nullptr;
 ClipboardChangedCallbackWithData g_callback = nullptr;
 
-enum ClipboardDataType {
-    TEXT = 1,
-    FILES = 2,
-    IMAGE = 3,
-    OTHER = 4
-};
+static HWND g_hwnd = nullptr;
+static std::atomic<bool> g_running{ false };
 
 // Function to retrieve text from the clipboard
 std::string GetClipboardText() {
@@ -71,7 +64,7 @@ LRESULT CALLBACK ClipboardProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
         }
 
         // Ensure the callback with data is valid before invoking it
-        // ToDo: Don't bother passing back the image data now - we will handle this on the .NET core side
+        // Update: Don't bother passing back the image data now - we will handle this on the .NET core side
         if (g_callback != nullptr) {
             if (IsClipboardFormatAvailable(CF_TEXT)) {
                 std::string text = GetClipboardText();
@@ -92,34 +85,57 @@ LRESULT CALLBACK ClipboardProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
+// *** Note: Exports for the functions below have been moved to the header file ClipboardMonitor.h ***
+
 // Function to start the clipboard listener
-extern "C" __declspec(dllexport) void StartClipboardListener() {
+void StartClipboardListener() {
+	// Prevent multiple instances
+    if (g_running)
+        return;
+
+    g_running = true;
+
     // Register the window class
-    WNDCLASS wc = { 0 };
+    WNDCLASS wc = {};
     wc.lpfnWndProc = ClipboardProc;
     wc.lpszClassName = L"ClipboardListenerWindow";
     RegisterClass(&wc);
 
     // Create a hidden window
-    HWND hwnd = CreateWindowEx(0, L"ClipboardListenerWindow", L"Clipboard Listener", 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
+    g_hwnd = CreateWindowEx(0, L"ClipboardListenerWindow", L"Clipboard Listener", 0, 0, 0, 0, 0, nullptr, nullptr, nullptr, nullptr);
 
     // Add the clipboard listener
-    AddClipboardFormatListener(hwnd);
+    AddClipboardFormatListener(g_hwnd);
 
     // Start the message listener (keep listening for events)
     MSG msg;
-    while (GetMessage(&msg, NULL, 0, 0)) {
+    while (GetMessage(&msg, nullptr, 0, 0)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
+    }
+
+	// Cleanup
+    RemoveClipboardFormatListener(g_hwnd);
+    DestroyWindow(g_hwnd);
+    g_hwnd = nullptr;
+}
+
+// Function to stop the clipboard listener
+void StopClipboardListener() {
+	// Set running to false and post a close message to the window
+    g_running = false;
+
+    if (g_hwnd) {
+        PostMessage(g_hwnd, WM_CLOSE, 0, 0);
     }
 }
 
 // Function to set the callback for clipboard changes
-extern "C" __declspec(dllexport) void SetClipboardChangedCallback(ClipboardChangedCallback callback) {
+void SetClipboardChangedCallback(ClipboardChangedCallback callback) {
     g_clipboardCallback = callback;
 }
 
 // Function to set the callback for clipboard changes with data and type
-extern "C" __declspec(dllexport) void SetClipboardChangedCallbackWithData(ClipboardChangedCallbackWithData callback) {
+void SetClipboardChangedCallbackWithData(ClipboardChangedCallbackWithData callback) {
     g_callback = callback;
 }

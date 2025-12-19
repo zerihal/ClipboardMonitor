@@ -15,6 +15,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClipboardMonitor.Linux", "C
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCoreTestAppLinux", "NetCoreTestAppLinux\NetCoreTestAppLinux.csproj", "{D91F3089-D32F-4A39-B9C4-3EF4621E1FAD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +93,18 @@ Global
 		{F6352307-8D56-4148-A132-E3B0FEF4FB96}.Release|x86.ActiveCfg = Release|x86
 		{F6352307-8D56-4148-A132-E3B0FEF4FB96}.Release|x86.Build.0 = Release|x86
 		{F6352307-8D56-4148-A132-E3B0FEF4FB96}.Release|x86.Deploy.0 = Release|x86
+		{D91F3089-D32F-4A39-B9C4-3EF4621E1FAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D91F3089-D32F-4A39-B9C4-3EF4621E1FAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D91F3089-D32F-4A39-B9C4-3EF4621E1FAD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D91F3089-D32F-4A39-B9C4-3EF4621E1FAD}.Debug|x64.Build.0 = Debug|Any CPU
+		{D91F3089-D32F-4A39-B9C4-3EF4621E1FAD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D91F3089-D32F-4A39-B9C4-3EF4621E1FAD}.Debug|x86.Build.0 = Debug|Any CPU
+		{D91F3089-D32F-4A39-B9C4-3EF4621E1FAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D91F3089-D32F-4A39-B9C4-3EF4621E1FAD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D91F3089-D32F-4A39-B9C4-3EF4621E1FAD}.Release|x64.ActiveCfg = Release|Any CPU
+		{D91F3089-D32F-4A39-B9C4-3EF4621E1FAD}.Release|x64.Build.0 = Release|Any CPU
+		{D91F3089-D32F-4A39-B9C4-3EF4621E1FAD}.Release|x86.ActiveCfg = Release|Any CPU
+		{D91F3089-D32F-4A39-B9C4-3EF4621E1FAD}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

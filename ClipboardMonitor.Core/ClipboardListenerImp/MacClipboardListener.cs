@@ -1,32 +1,30 @@
-﻿using ClipboardMonitor.Core.Enums;
-using ClipboardMonitor.Core.Interfaces;
+﻿using ClipboardMonitor.Core.Interfaces;
 
 namespace ClipboardMonitor.Core.ClipboardListenerImp
 {
-    public class MacClipboardListener : IMacClipboardListener
+    public class MacClipboardListener : ClipboardListenerBase, IMacClipboardListener
     {
-        /// <inheritdoc/>
-        public bool IsMonitoring { get; private set; }
-
         public MacClipboardListener() 
         {
             // Not implented yet
         }
 
-        /// <inheritdoc/>
-        public void SetNotificationType(NotificationType notificationType)
+        protected override void SetCallbacksNoData(bool unset = false)
         {
             throw new NotImplementedException();
         }
 
-        /// <inheritdoc/>
-        public void Start()
+        protected override void SetCallbacksWithData(bool unset = false)
         {
             throw new NotImplementedException();
         }
 
-        /// <inheritdoc/>
-        public void Stop()
+        protected override void StartListener()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void StopListener()
         {
             throw new NotImplementedException();
         }

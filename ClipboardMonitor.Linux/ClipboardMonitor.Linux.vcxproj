@@ -83,9 +83,14 @@
     <IncludePath>/usr/include/X11;/usr/include;$(IncludePath)</IncludePath>
     <TargetExt>.so</TargetExt>
     <TargetName>lib$(ProjectName)</TargetName>
+    <ExcludePath>$(ExcludePath)</ExcludePath>
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="ClipboardMonitor.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ClipboardMonitor.h" />
+    <ClInclude Include="sha256.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -102,7 +107,7 @@ copy /Y "$(TargetDir)libClipboardMonitor.Linux.so" "$(SolutionDir)ClipboardMonit
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>/usr/lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>/usr/lib;/usr/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>/usr/lib/gcc/x86_64-linux-gnu;/usr/lib/x86_64-linux-gnu;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

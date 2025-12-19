@@ -1,10 +1,8 @@
 #include <windows.h>
 #include <iostream>
+#include "../ClipboardMonitor.Windows/ClipboardMonitor.h"
 
-// Declare the callback type for the callback with data (takes a const char* parameter)
-typedef void(__cdecl* ClipboardChangedCallbackWithData)(const char*, int type);
-
-// Declare the external functions from the DLLs
+// Declare the external functions from the DLLs (ignore pragma warning below)
 extern "C" __declspec(dllimport) void StartClipboardListener();
 extern "C" __declspec(dllimport) void SetClipboardChangedCallback(void(*callback)());
 extern "C" __declspec(dllimport) void SetClipboardChangedCallbackWithData(ClipboardChangedCallbackWithData callback);
@@ -19,7 +17,7 @@ void OnClipboardChangedWithData(const char* clipboardData, int type) {
     if (clipboardData != nullptr) {
         std::cout << "Clipboard content changed with data" << std::endl;
 
-        if (type == 3) {
+        if (type == IMAGE) {
             std::cout << "Data: Image" << std::endl;
         }
         else {
