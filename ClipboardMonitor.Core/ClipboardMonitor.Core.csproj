@@ -42,11 +42,8 @@
       <PackagePath>\</PackagePath>
     </None>
     <None Include="runtimes\win-x64\native\ClipboardMonitor.Windows.dll" Pack="true" PackagePath="runtimes/win-x64/native" />
+    <None Include="runtimes\linux-x64\native\libClipboardMonitor.Linux.so" Pack="true" PackagePath="runtimes/linux-x64/native" />
     <!--<None Include="runtimes\osx-x64\native\libClipboardMonitor.Mac.dylib" Pack="true" PackagePath="runtimes/osx-x64/native" />-->
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="runtimes\linux-x64\native\libClipboardMonitor.Linux.so" Pack="true" PackagePath="runtimes/linux-x64/native" />
   </ItemGroup>
 
 </Project>
