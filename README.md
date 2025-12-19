@@ -1,6 +1,6 @@
 <h1>Clipboard Monitor</h1>
-<p>Notification based library for Windows clipboard monitoring. This monitors the system clipboard for new items being added on a background subscription to fire an callback whenever data is added, optionally (default) providing a reference to the data type and data itself or source.</p>
-<p>Note: The package currently only include Windows implementation, however Linux and Mac implementations will also be included in later releases.</p>
+<p>Notification based library for Windows and Linux clipboard monitoring. This monitors the system clipboard for new items being added on a background subscription to fire an callback whenever data is added, optionally (default) providing a reference to the data type and data itself or source.</p>
+<p>Note: The package currently only includes Windows and Linux implementation, however Mac implementations will also be included in later releases.</p>
 <br/>
 <h3>Library Contents and Usage</h3>
 <h4>Properties</h4>
@@ -13,15 +13,15 @@
   <li>Start() - Starts the clipboard monitor for notification type selected</li>
   <li>Stop() - Stops the clipboard monitor, cleaning up callbacks and resources</li>
 </ul>
-<h4>Events (Windows implementation)</h4>
+<h4>Events</h4>
 <ul>
   <li>ClipboardChanged - Occurs when clipboard monitor has been started and clipboard data is added (event arguments can incldue data)</li>
 </ul>
 <h4>Sample use:</h4>
 
 ```
-// Create an instance of Clipboard Listener
-var clipboardListener = ClipboardListenerFactory.CreateClipboardListener<IWindowsClipboardListener>();
+// Create an instance of Clipboard Listener (relevant implementation for the OS will be created by the factory method)
+var clipboardListener = ClipboardListenerFactory.CreateClipboardListener();
 
 // Add callback event handler
 clipboardListener.ClipboardChanged += ClipboardListener_OnClipboardChanged;
@@ -43,9 +43,17 @@ private void ClipboardListener_ClipboardChanged(object? sender, WinClipboardChan
   {
     // Do something with clipboard files (these include file path)
   }
-  if (e.DataType == ClipboardDataType.IMAGE && e.ClipboardImage != null)
+  if (e.DataType == ClipboardDataType.IMAGE)
   {
-    // Do something with clipboard image (Bitmap)
+    if (e.ClipboardImage != null)
+    {
+      // Do something with clipboard image (Bitmap - Windows)
+    }
+    else if (e.ClipboardImage is IClipboardImage clipboardImage)
+    {
+      // Linux clipboard image - can get data (image byte array) or format (e.g. png), or save such as below
+      clipboardImage.Save(Path.Combine("/tmp/ClipboardMonitor/someImage.png");
+    }
   }
   else
   {
