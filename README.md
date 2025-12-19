@@ -33,7 +33,7 @@ clipboardListener.Start();
 ```
 ```
 // Event handler for clipboard changed
-private void ClipboardListener_ClipboardChanged(object? sender, WinClipboardChangedEventArgs e)
+private void ClipboardListener_ClipboardChanged(object? sender, ClipboardChangedEventArgs e)
 {
   if (e.DataType == ClipboardDataType.TEXT)
   {
