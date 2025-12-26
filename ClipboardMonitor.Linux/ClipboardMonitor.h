@@ -12,10 +12,12 @@ extern "C" {
 
     // Enum for clipboard data types
     typedef enum ClipboardDataType {
+		NONE = 0,
         TEXT = 1,
         FILES = 2,
         IMAGE = 3,
-        NONE = 4
+        OTHER = 4,
+        CLEARED = 5
     } ClipboardDataType;
 
     // Callback setters

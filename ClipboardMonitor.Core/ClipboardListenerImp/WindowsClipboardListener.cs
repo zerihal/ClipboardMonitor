@@ -11,6 +11,9 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
 {
     public class WindowsClipboardListener : ClipboardListenerBase, IWindowsClipboardListener
     {
+        private const string NativeDllName = "ClipboardMonitor.Windows.dll";
+        private const CallingConvention CallConv = CallingConvention.Cdecl;
+
         // Delegate matching the ClipboardMonitor.Windows callback function signature for clipboard changed
         private delegate void ClipboardChangedCallback();
 
@@ -19,19 +22,23 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
         private delegate void ClipboardChangedCallbackWithData([MarshalAs(UnmanagedType.LPStr)] string data, int type);
 
         // Import StartClipboardListener function from the DLL
-        [DllImport("ClipboardMonitor.Windows.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NativeDllName, CallingConvention = CallConv)]
         private static extern void StartClipboardListener();
 
         // Import StopClipboardListener function from the DLL
-        [DllImport("ClipboardMonitor.Windows.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NativeDllName, CallingConvention = CallConv)]
         private static extern void StopClipboardListener();
 
+        // Import ClearClipboard function from the DLL
+        [DllImport(NativeDllName, CallingConvention = CallConv)]
+        private static extern bool ClearClipboard();
+
         // Import SetClipboardChangedCallback function from the DLL
-        [DllImport("ClipboardMonitor.Windows.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NativeDllName, CallingConvention = CallConv)]
         private static extern void SetClipboardChangedCallback(ClipboardChangedCallback? callback);
 
         // Import SetClipboardChangedCallbackWithData function from the DLL
-        [DllImport("ClipboardMonitor.Windows.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NativeDllName, CallingConvention = CallConv)]
         private static extern void SetClipboardChangedCallbackWithData(ClipboardChangedCallbackWithData? callback);
 
         private ClipboardChangedCallback? _clipboardChangedCallbackNoData;
@@ -49,6 +56,9 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
         {
             SetNotificationType(NotificationType.ChangedWithData);
         }
+
+        /// <inheritdoc/>
+        public override bool ClearClipboardContent() => ClearClipboard();
 
         /// <inheritdoc/>
         protected override void SetCallbacksNoData(bool unset = false)
@@ -138,8 +148,16 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
                     }
                     break;
 
+                case ClipboardDataType.CLEARED:
+                    Console.WriteLine("Clipboard cleared"); // Debug only - to be removed
+                    OnClipboardChanged(new ClipboardChangedEventArgs(ClipboardDataType.CLEARED));
+                    // Clear last data trackers
+                    _lastStringData = null;
+                    _lastImageHash = null;
+                    break;
+
                 default:
-                    Console.WriteLine("Unknown clipboard event"); // Debug only - to be removed
+                    Console.WriteLine("Unknown clipboard event or no data"); // Debug only - to be removed
                     break;
             }
         }

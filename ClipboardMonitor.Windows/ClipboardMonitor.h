@@ -18,18 +18,20 @@ extern "C" {
     typedef void (*ClipboardChangedCallback)();
     typedef void (*ClipboardChangedCallbackWithData)(const char* data, int type);
 
-    // Enum for clipboard data types
+	// Enum for clipboard data types (clear is currently done from .NET side, but included for completeness in case moved later)
     typedef enum ClipboardDataType {
+		NONE = 0,
         TEXT = 1,
         FILES = 2,
         IMAGE = 3,
 		OTHER = 4,
-        NONE = 5
+		CLEARED = 5
     } ClipboardDataType;
 
     // Methods and callback setters
     CLIPBOARD_API void StartClipboardListener();
     CLIPBOARD_API void StopClipboardListener();
+	CLIPBOARD_API bool ClearClipboard();
     CLIPBOARD_API void SetClipboardChangedCallback(ClipboardChangedCallback callback);
     CLIPBOARD_API void SetClipboardChangedCallbackWithData(ClipboardChangedCallbackWithData callback);
 

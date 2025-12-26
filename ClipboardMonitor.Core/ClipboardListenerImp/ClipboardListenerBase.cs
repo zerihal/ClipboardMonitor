@@ -4,7 +4,7 @@ using ClipboardMonitor.Core.Interfaces;
 
 namespace ClipboardMonitor.Core.ClipboardListenerImp
 {
-    public abstract class ClipboardListenerBase : IClipboardListener
+    public abstract class ClipboardListenerBase : IClipboardListener, IDisposable
     {
         protected Task? _clipboardMonitorTask;
         protected CancellationTokenSource? _clipboardMonitorTokenCts;
@@ -57,6 +57,9 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
 
             IsMonitoring = false;
         }
+
+        /// <inheritdoc/>
+        public abstract bool ClearClipboardContent();
 
         /// <summary>
         /// Sets callbacks according as per notification type set.
@@ -121,5 +124,10 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
         /// </summary>
         /// <param name="e">Windows clipboard changed event arguments.</param>
         protected void OnClipboardChanged(ClipboardChangedEventArgs e) => ClipboardChanged?.Invoke(this, e);
+
+        /// <summary>
+        /// Disposes the clipboard listener and stops monitoring (cleanup).
+        /// </summary>
+        public void Dispose() => Stop();
     }
 }

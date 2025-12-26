@@ -35,9 +35,23 @@ internal class Program
             Console.WriteLine(e.Message);
         }
 
-        Console.WriteLine("Press Enter to exit...");
-        Console.ReadLine();
+        Console.WriteLine("Press C to clear clipboard or any other key to exit...");
 
+        while (true)
+        {
+            var key = Console.ReadKey(intercept: true);
+
+            if (key.KeyChar == 'c' || key.KeyChar == 'C')
+            {
+                clipboardListener?.ClearClipboardContent();
+                continue;
+            }
+
+            // Any other key exits the loop
+            break;
+        }
+
+        // Stop the listener       
         clipboardListener?.Stop();
     }
 

@@ -17,9 +17,9 @@
     <RepositoryUrl>https://github.com/zerihal/ClipboardMonitor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>clipboard;windows;monitor</PackageTags>
-    <AssemblyVersion>2.0.0.1</AssemblyVersion>
-    <FileVersion>2.0.0.1</FileVersion>
-    <Version>2.0.0.1</Version>
+    <AssemblyVersion>2.1.0.1</AssemblyVersion>
+    <FileVersion>2.1.0.1</FileVersion>
+    <Version>2.1.0.1</Version>
     <IncludeDocumentationFile>true</IncludeDocumentationFile>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>

@@ -2,6 +2,7 @@
 using ClipboardMonitor.Core.Enums;
 using ClipboardMonitor.Core.EventArguments;
 using ClipboardMonitor.Core.Interfaces;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -9,6 +10,9 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
 {
     public class LinuxClipboardListener : ClipboardListenerBase, ILinuxClipboardListener
     {
+        private const string NativeDllName = "libClipboardMonitor.Linux.so";
+        private const CallingConvention CallConv = CallingConvention.Cdecl;
+
         // Delegate matching the Linux callback function signature for clipboard changed
         private delegate void ClipboardChangedCallback();
 
@@ -17,19 +21,19 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
         private delegate void ClipboardChangedCallbackWithData(IntPtr data, int dataSize, int type);
 
         // Import StartClipboardListener function from the .so
-        [DllImport("libClipboardMonitor.Linux.so", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NativeDllName, CallingConvention = CallConv)]
         private static extern void StartClipboardListener();
 
         // Import StopClipboardListener function from the .so
-        [DllImport("libClipboardMonitor.Linux.so", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NativeDllName, CallingConvention = CallConv)]
         private static extern void StopClipboardListener();
 
         // Import SetClipboardChangedCallback function from the .so
-        [DllImport("libClipboardMonitor.Linux.so", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NativeDllName, CallingConvention = CallConv)]
         private static extern void SetClipboardChangedCallback(ClipboardChangedCallback? callback);
 
         // Import SetClipboardChangedCallbackWithData function from the .so
-        [DllImport("libClipboardMonitor.Linux.so", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NativeDllName, CallingConvention = CallConv)]
         private static extern void SetClipboardChangedCallbackWithData(ClipboardChangedCallbackWithData? callback);
 
         private ClipboardChangedCallback? _clipboardChangedCallbackNoData;
@@ -41,6 +45,49 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
         public LinuxClipboardListener() 
         {
             SetNotificationType(NotificationType.ChangedWithData);
+        }
+
+        /// <inheritdoc/>
+        public override bool ClearClipboardContent()
+        {
+            try
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "xclip",
+                    Arguments = "-selection clipboard",
+                    RedirectStandardInput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                // Set DISPLAY if needed
+                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DISPLAY")))
+                    psi.Environment["DISPLAY"] = ":0";
+
+                using var process = Process.Start(psi);
+                process!.StandardInput.Write("");   // empty clipboard
+                process.StandardInput.Flush();
+                process.StandardInput.Close();
+                process.WaitForExit();
+
+                if (process.ExitCode == 0)
+                {
+                    OnClipboardChanged(new ClipboardChangedEventArgs(ClipboardDataType.CLEARED));
+                    return true;
+                }
+                else
+                {
+                    // Exit code should usually be 0 (error with this will normally be caught below), but just in case
+                    // not 0, we treat as failure.
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Failed to clear clipboard: " + ex.Message);
+                return false;
+            }
         }
 
         /// <inheritdoc/>
@@ -140,7 +187,7 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
                     }
 
                 default:
-                    Console.WriteLine("Unknown clipboard event"); // Debug
+                    Console.WriteLine("Unknown clipboard event or no data"); // Debug
                     break;
             }
         }
