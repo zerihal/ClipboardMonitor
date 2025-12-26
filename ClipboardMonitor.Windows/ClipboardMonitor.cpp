@@ -56,33 +56,53 @@ bool IsClipboardImage() {
 }
 
 // Callback function for clipboard changes
-LRESULT CALLBACK ClipboardProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    if (uMsg == WM_CLIPBOARDUPDATE) {
-        if (g_clipboardCallback != nullptr) {
+LRESULT CALLBACK ClipboardProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
+{
+	bool clipboardCleared = false;
+
+    if (uMsg == WM_CLIPBOARDUPDATE) 
+    {
+        if (g_clipboardCallback != nullptr) 
+        {
             // Invoke the callback function when the clipboard changes
             g_clipboardCallback();
         }
 
+        clipboardCleared = CountClipboardFormats() == 0;
+
         // Ensure the callback with data is valid before invoking it
         // Update: Don't bother passing back the image data now - we will handle this on the .NET core side
-        if (g_callback != nullptr) {
-            if (IsClipboardFormatAvailable(CF_TEXT)) {
-                std::string text = GetClipboardText();
-                g_callback(text.c_str(), TEXT);
-            }
-            else if (IsClipboardFormatAvailable(CF_HDROP)) {
-                std::string files = GetClipboardFiles();
-                g_callback(files.c_str(), FILES);
-            }
-            else if (IsClipboardImage()) {
-                g_callback("ClipboardImage", IMAGE);
-            }
-            else {
-                g_callback("UnsupportedType", OTHER);
+        if (g_callback != nullptr) 
+        {
+            if (clipboardCleared) 
+            {
+                g_callback("ClipboardCleared", CLEARED);
+			}
+            else
+            {
+                if (IsClipboardFormatAvailable(CF_TEXT))
+                {
+                    std::string text = GetClipboardText();
+                    g_callback(text.c_str(), TEXT);
+                }
+                else if (IsClipboardFormatAvailable(CF_HDROP))
+                {
+                    std::string files = GetClipboardFiles();
+                    g_callback(files.c_str(), FILES);
+                }
+                else if (IsClipboardImage())
+                {
+                    g_callback("ClipboardImage", IMAGE);
+                }
+                else
+                {
+                    g_callback("UnsupportedType", OTHER);
+                }
             }
         }
     }
-    return DefWindowProc(hwnd, uMsg, wParam, lParam);
+
+    return clipboardCleared ? 0 : DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
 // *** Note: Exports for the functions below have been moved to the header file ClipboardMonitor.h ***
@@ -128,6 +148,21 @@ void StopClipboardListener() {
     if (g_hwnd) {
         PostMessage(g_hwnd, WM_CLOSE, 0, 0);
     }
+}
+
+// Function to clear the clipboard
+bool ClearClipboard() {
+    for (int i = 0; i < 5; ++i)
+    {
+        if (OpenClipboard(nullptr))
+        {
+            bool result = EmptyClipboard() != FALSE;
+            CloseClipboard();
+            return result;
+        }
+        Sleep(10);
+    }
+    return false;
 }
 
 // Function to set the callback for clipboard changes

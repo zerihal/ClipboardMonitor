@@ -87,10 +87,12 @@
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="ClipboardMonitor.cpp" />
+    <ClCompile Include="Version.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ClipboardMonitor.h" />
     <ClInclude Include="sha256.h" />
+    <ClInclude Include="Version.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

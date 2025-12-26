@@ -9,6 +9,11 @@ namespace ClipboardMonitor.Core.ClipboardListenerImp
             // Not implented yet
         }
 
+        public override bool ClearClipboardContent()
+        {
+            throw new NotImplementedException();
+        }
+
         protected override void SetCallbacksNoData(bool unset = false)
         {
             throw new NotImplementedException();

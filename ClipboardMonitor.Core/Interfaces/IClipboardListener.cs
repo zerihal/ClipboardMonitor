@@ -30,5 +30,13 @@ namespace ClipboardMonitor.Core.Interfaces
         /// Stops the clipboard monitor, cleaning up callbacks and resources.
         /// </summary>
         void Stop();
+
+        /// <summary>
+        /// Clears the clipboard content.
+        /// </summary>
+        /// <returns>
+        /// <see langword="True"/> if clipboard was cleared successfully, otherwise <see langword="false"/>.
+        /// </returns>
+        bool ClearClipboardContent();
     }
 }

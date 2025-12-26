@@ -39,8 +39,25 @@ namespace NetCoreTestAppLinux
                 Console.WriteLine(e.Message);
             }
 
-            Console.WriteLine("Press Enter to exit...");
-            Console.ReadLine();
+            Console.WriteLine("Press C to clear clipboard or any other key to exit...");
+
+            while (true)
+            {
+                var key = Console.ReadKey(intercept: true);
+
+                if (key.KeyChar == 'c' || key.KeyChar == 'C')
+                {
+                    Console.WriteLine("Clipboard clear pressed.");
+                    if (clipboardListener?.ClearClipboardContent() == true)
+                        Console.WriteLine("Clipboard cleared.");
+                    else
+                        Console.WriteLine("Failed to clear clipboard.");
+                    continue;
+                }
+
+                // Any other key exits the loop
+                break;
+            }
 
             clipboardListener?.Stop();
         }
