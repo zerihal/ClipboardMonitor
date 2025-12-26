@@ -74,12 +74,21 @@ Before using the package on Linux, ensure the following libraries are installed:
   ```bash
   sudo dnf install libX11-devel
 
+To use the ```ClearClipboardContent()``` method, also ensure that xclip is installed:
+
+- Debian / Ubuntu:
+  ```bash
+  sudo apt install xclip
+- Fedora / RHEL:
+  ```bash
+  sudo dnf install xclip
+
 <h4>Building the Linux native assembly (ClipboardMonitor.Linux):</h4>
 
 Prerequisites
 
 * Linux environment (remote Linux machine or WSL2 on Windows)
-* C++ compiler supporting C++11 (g++)
+* C++ compiler supporting C++11 or higher (g++)
 * X11 development libraries
 
 In Project Properties > Configuration Properties > General for ClipboardMonitor.Linux, set Remote Build Machine details for the Linux environment to build the .so file. If using the pre-built .so file from this repo then exclude this project from build when building the solution.
