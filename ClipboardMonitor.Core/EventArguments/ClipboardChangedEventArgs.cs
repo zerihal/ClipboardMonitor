@@ -34,7 +34,7 @@ namespace ClipboardMonitor.Core.EventArguments
             get
             {
                 if (DataType == ClipboardDataType.FILES && !string.IsNullOrWhiteSpace(ClipboardText))
-                    return ClipboardText.Split("\n");
+                    return ClipboardText?.Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries);
 
                 return null;
             }
