@@ -13,6 +13,7 @@ namespace ClipboardMonitor.Core.Factories
         /// <exception cref="PlatformNotSupportedException">Unsupported platform exception.</exception>
         public static IClipboardListener CreateClipboardListener()
         {
+#if NET5_0_OR_GREATER
             if (OperatingSystem.IsWindows())
             {
                 return new WindowsClipboardListener();
@@ -25,10 +26,21 @@ namespace ClipboardMonitor.Core.Factories
             {
                 return new MacClipboardListener();
             }
-            else
+#else
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                throw new PlatformNotSupportedException("Clipboard listener not supported on this platform.");
+                return new WindowsClipboardListener();
             }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return new LinuxClipboardListener();
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return new MacClipboardListener();
+            }
+#endif
+            throw new PlatformNotSupportedException("Clipboard listener not supported on this platform.");
         }
 
         /// <summary>
