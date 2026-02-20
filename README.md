@@ -30,6 +30,10 @@ clipboardListener.ClipboardChanged += ClipboardListener_OnClipboardChanged;
 clipboardListener.Start();
 
 [...]
+
+// Stop the listener and cleanup
+clipboardListener.Stop();
+clipboardListener.ClipboardChanged -= ClipboardListener_OnClipboardChanged;
 ```
 ```
 // Event handler for clipboard changed
