@@ -1,6 +1,7 @@
 <h1>Clipboard Monitor</h1>
 <p>Notification based library for Windows and Linux clipboard monitoring. This monitors the system clipboard for new items being added on a background subscription to fire an callback whenever data is added, optionally (default) providing a reference to the data type and data itself or source.</p>
 <p>Note: The package currently only includes Windows and Linux implementation, however Mac implementations will also be included in later releases.</p>
+<p>Latest version of the package is available from [nuget.org (ClipboardMonitor.Core)](https://www.nuget.org/packages/ClipboardMonitor.Core).</p>
 <br/>
 <h3>Library Contents and Usage</h3>
 <h4>Properties</h4>
