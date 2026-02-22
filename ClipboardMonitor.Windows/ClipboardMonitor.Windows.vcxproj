@@ -151,6 +151,10 @@ copy /Y "$(TargetDir)ClipboardMonitor.Windows.dll" "$(SolutionDir)ClipboardMonit
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
     </Link>
+    <PostBuildEvent>
+      <Command>if not exist "$(SolutionDir)ClipboardMonitor.Core\runtimes\linux-x64\native" mkdir "$(SolutionDir)ClipboardMonitor.Core\runtimes\win-x64\native"
+copy /Y "$(TargetDir)ClipboardMonitor.Windows.dll" "$(SolutionDir)ClipboardMonitor.Core\runtimes\win-x64\native\ClipboardMonitor.Windows.dll"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ClipboardMonitor.cpp" />
