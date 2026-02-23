@@ -13,6 +13,7 @@
   <li>SetNotificationType(NotificationType) - Sets notification type for clipboard changed with or without data</li>
   <li>Start() - Starts the clipboard monitor for notification type selected</li>
   <li>Stop() - Stops the clipboard monitor, cleaning up callbacks and resources</li>
+  <li>ClearClipboardContent() - Clears the current clipboard content.</li>
 </ul>
 <h4>Events</h4>
 <ul>
