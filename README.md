@@ -51,7 +51,7 @@ private void ClipboardListener_ClipboardChanged(object? sender, ClipboardChanged
   }
   if (e.DataType == ClipboardDataType.IMAGE)
   {
-    if (e.ClipboardImage != null)
+    if (e.BmpClipboardImage != null)
     {
       // Do something with clipboard image (Bitmap - Windows)
     }
