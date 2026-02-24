@@ -41,12 +41,12 @@ namespace ClipboardMonitor.Core.EventArguments
         }
 
         /// <summary>
-        /// Clipboard image (if applicable).
+        /// Clipboard image (if applicable) from Windows clipboard.
         /// </summary>
         public Bitmap? BmpClipboardImage { get; }
 
         /// <summary>
-        /// 
+        /// Clipboard image (if applicable) from Linux clipboard.
         /// </summary>
         public IClipboardImage ClipboardImage { get; }
 
