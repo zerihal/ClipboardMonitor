@@ -97,4 +97,4 @@ Prerequisites
 * C++ compiler supporting C++11 or higher (g++)
 * X11 development libraries
 
-If building from Windows (Visual Studio), in Project Properties > Configuration Properties > General for ClipboardMonitor.Linux, set Remote Build Machine details for the Linux environment to build the .so file. If using the pre-built .so file from this repo then exclude this project from build when building the solution.
+If building from Windows (Visual Studio), in Project Properties > Configuration Properties > General for ClipboardMonitor.Linux, set Remote Build Machine details for the Linux environment to build the .so file. <i>If using the pre-built .so file from this repo then exclude the ClipboardMonitor.Linux project from build when building the solution.</i>
